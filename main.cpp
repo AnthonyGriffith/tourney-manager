@@ -8,6 +8,14 @@ using namespace std;
 
 // ESTRUCTURAS DE DATOS
 
+// Listas
+struct nodoLista
+{
+	string nombre;
+	int puntaje;
+	nodoLista *sig;
+};
+
 // Arbol
 struct Nodo{
 	string nombre;
@@ -22,10 +30,12 @@ struct Nodo{
 	
 };
 
-// Listas
-
-
 // PROTOTIPOS 
+
+// Listas
+void insertar(nodoLista *&, nodoLista *&, int, string);
+void llenarLista(Nodo *);
+void displayList(nodoLista *&);
 
 // Arbol
 Nodo *crearNodo(int );
@@ -33,11 +43,10 @@ void crearArbolPerfecto(Nodo *&, int, int);
 void crearArbolTorneo();
 void mostrarArbol(Nodo*,int);
 
-// Listas
-
-
-
 // VARIABLES GLOBALES
+
+// Listas
+nodoLista *primero, *ultimo;
 
 // Arboles
 Nodo *raiz = NULL;
@@ -45,11 +54,75 @@ int numParticipante = 1;
 int idActual = 1;
 Nodo* jugadorBuscado = NULL;
 
-// Listas
 
 // FUNCIONES
 
+// Listas
+void insertar(nodoLista *&primero, nodoLista *&ultimo, int puntaje, string nombre)
+{
+	nodoLista *nuevoNodo = NULL, *cola = NULL, *actual = NULL;
+	bool encontrado;
 
+	nuevoNodo = new nodoLista;
+	nuevoNodo->sig = NULL;
+	nuevoNodo->nombre = nombre;
+	nuevoNodo->puntaje = puntaje;
+
+	if (primero == NULL)
+	{
+		primero = nuevoNodo;
+		ultimo = nuevoNodo;
+	}
+	else
+	{
+		actual = primero;
+		encontrado = false;
+		while (actual != NULL && !encontrado)
+			if (actual->puntaje < puntaje)
+				encontrado = true;
+			else
+			{
+				cola = actual;
+				actual = actual->sig;
+			}
+		if (actual == primero)
+		{
+			nuevoNodo->sig = primero;
+			primero = nuevoNodo;
+		}
+		else
+		{
+			cola->sig = nuevoNodo;
+			nuevoNodo->sig = actual;
+			if (actual == NULL)
+				ultimo = nuevoNodo;
+		}
+	}
+	
+}
+
+void displayList(nodoLista *&primero)
+{
+	nodoLista *actual;
+	actual = primero;
+	while (actual != NULL)
+	{
+		printf("%s: %d puntos\n", actual->nombre.c_str(), actual->puntaje);
+		actual = actual->sig;
+	}
+}
+
+void llenarLista(Nodo * arbol){
+	if(arbol == NULL){
+		
+	}else{
+		if((arbol->id != NULL && arbol->victoria == 0) || arbol->victoria == 1){
+			insertar(primero, ultimo, arbol->puntaje, arbol->nombre);
+		}
+		llenarLista(arbol->izq);
+		llenarLista(arbol->der);
+	}
+};
 
 // Arboles
 
@@ -69,7 +142,7 @@ Nodo *crearNodo(int n){
 	return nuevo_nodo;
 }
 
-void mostrarArbol(Nodo *arbol,int contador){
+void mostrarArbol(Nodo *arbol,int contador){ // Opcion 4 del sistema
     if(arbol==NULL){
         return;
 
@@ -206,7 +279,7 @@ Nodo *buscarContrincante(Nodo * arbol){ // Secundaria
 	return arbol->padre->izq;
 }
 
-void ganadorPartida(int id){
+void ganadorPartida(int id){ // Opcion 1 del sistema
 	buscarJugador(raiz, id);
 	Nodo *jugador = jugadorBuscado;
 	Nodo *contrincante = buscarContrincante(jugador);
@@ -268,7 +341,7 @@ void ganarHastaNivel(Nodo *jugador, int nivel){ // Secundaria
 	}
 }
 
-void choqueContendientes(int id1, int id2){
+void choqueContendientes(int id1, int id2){ // Opcion 2 del sistema
 
 	buscarJugador(raiz, id1);
 	Nodo *contendiente1 = jugadorBuscado;
@@ -307,7 +380,7 @@ void choqueContendientes(int id1, int id2){
 	cout << "Los contendientes estan listos para enfrentarse.\n\n" << endl;
 }
 
-void puntajeMasAlto(int id){
+void puntajeMasAlto(int id){ // Opcion 3 del sistema
 	buscarJugador(raiz, id);
 	Nodo *jugador = jugadorBuscado;
 	while(jugador->padre != NULL){
@@ -321,6 +394,8 @@ void puntajeMasAlto(int id){
 	}
 	printf("El maximo puntaje obtenido por el jugador es de: %d puntos\n",jugador->puntaje);
 };
+
+
 
 //MENU
 
@@ -372,14 +447,22 @@ void Menu(){
 				mostrarArbol(raiz, 0);
 				break;
 			case 5:
-				
+				primero = NULL;
+				ultimo = NULL;
+				llenarLista(raiz);
+				displayList(primero);
+				break;
+			case 6:
 				break;
 			default:
 				cout << "Opcion no valida" << endl;
 				break;
 		}
-		system("pause");
-		system("cls");
+		if(opcion != 6){
+			system("pause");
+			system("cls");
+		}
+
 		
 		
 	}while(opcion != 6);
