@@ -43,6 +43,7 @@ void mostrarArbol(Nodo*,int);
 Nodo *raiz = NULL;
 int numParticipante = 1;
 int idActual = 1;
+Nodo* jugadorBuscado = NULL;
 
 // Listas
 
@@ -79,10 +80,10 @@ void mostrarArbol(Nodo *arbol,int contador){
             printf("   ");
         }
         if(arbol->victoria == 0 && arbol->id != NULL ){
-            printf("%s\n", arbol->nombre.c_str());
+            printf("(%d)%s\n", arbol->id, arbol->nombre.c_str());
         }else{
             if(arbol->victoria == 2){
-                printf("%s\n", arbol->nombre.c_str());
+                printf("(%d)%s\n", arbol->id, arbol->nombre.c_str());
             }else if(arbol->victoria == 1){
                 printf("(X)     \n",arbol->nombre.c_str());
             }else{
@@ -91,6 +92,25 @@ void mostrarArbol(Nodo *arbol,int contador){
         }
         mostrarArbol(arbol->izq,contador+1);
     }
+}
+
+void buscarJugador(Nodo *arbol, int id){
+	if(arbol == NULL){
+		
+	}else{
+		if(arbol->id == id && arbol->victoria == 0){
+			jugadorBuscado = arbol;
+		}
+		buscarJugador(arbol->izq, id);
+		buscarJugador(arbol->der, id);
+	}
+}
+
+Nodo *buscarContrincante(Nodo * arbol){
+	if(arbol->padre->izq->num == arbol->num){
+		return arbol->padre->der;
+	}
+	return arbol->padre->izq;
 }
 
 void crearArbolPerfecto(Nodo *&padre, int nivelActual, int nivel){
@@ -184,6 +204,38 @@ void crearArbolTorneo(){
 	
 }
 
+void ganadorPartida(int id){
+	buscarJugador(raiz, id);
+	Nodo *jugador = jugadorBuscado;
+	Nodo *contrincante = buscarContrincante(jugador);
+	if (contrincante->id == NULL){
+		cout << "No hay contrincante aun" << endl;	
+	}else if(jugador->padre == NULL){
+		cout << "Ya el torneo tiene un ganador!" << endl;
+	}else{
+		// Movemos al ganador al siguiente bracket
+		jugador->padre->id = jugador->id;
+		jugador->padre->nombre = jugador->nombre;
+		
+		// Recalculamos el puntaje
+		jugador->padre->puntaje = jugador->puntaje + 1 + (contrincante->puntaje/jugador->puntaje);
+		
+		// Indicamos resultados
+		contrincante->victoria = 1;
+		jugador->victoria = 2;
+		printf("\n-----------------------------\n");
+		//Mostramos en pantalla
+		printf("%s ha ganado su encuentro correctamente\nEl estado actual del torneo es el siguiente:\n\n", jugador->nombre.c_str());
+		mostrarArbol(raiz, 0);
+		printf("\n-----------------------------\n");
+		if(jugador->padre->padre == NULL){
+			printf("El ganador del torneo es... %s con %d puntos!!!\n", jugador->padre->nombre.c_str(), jugador->padre->puntaje);
+		}
+		
+	}
+	
+}
+
 
 //MENU
 
@@ -207,7 +259,10 @@ void Menu(){
 				
 		switch(opcion){
 			case 1:	
-				
+				cout<<"Id del jugador: ";
+				cin>>dato;
+				ganadorPartida(dato);
+				break;
 				break;
 			case 2:
 			
