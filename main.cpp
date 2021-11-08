@@ -85,7 +85,7 @@ void mostrarArbol(Nodo *arbol,int contador){
             if(arbol->victoria == 2){
                 printf("(%d)%s\n", arbol->id, arbol->nombre.c_str());
             }else if(arbol->victoria == 1){
-                printf("(X)     \n",arbol->nombre.c_str());
+                printf("(X)%s     \n",arbol->nombre.c_str());
             }else{
                 printf("P-----\n",arbol->num);
                 
@@ -157,7 +157,7 @@ void crearArbolTorneo(){
 	int numParticipantes;
 	int cont = 1;
 	int bandera = false;
-	cout << "Indique el tamaño del torneo, dicho numero debe ser una potencia de 2, ejemplo 2,4,8,16, etc...\n";
+	cout << "Indique la cantidad de participantes del torneo\nNOTA: dicho numero debe ser una potencia de 2, ejemplo 2,4,8,16, etc...\n--> ";
 	cin >> numParticipantes;
 	while(true){
 		if(pow(2, cont) == numParticipantes){
@@ -307,6 +307,20 @@ void choqueContendientes(int id1, int id2){
 	cout << "Los contendientes estan listos para enfrentarse.\n\n" << endl;
 }
 
+void puntajeMasAlto(int id){
+	buscarJugador(raiz, id);
+	Nodo *jugador = jugadorBuscado;
+	while(jugador->padre != NULL){
+		Nodo *contrincante = buscarContrincante(jugador);
+		if(contrincante->id != NULL){ // Si hay un contrincante, hacemos que el jugador gane
+			ganadorPartida(jugador->id);
+			jugador = jugador->padre;
+		}else{ // Si no, se consigue el un rival 
+			completarRama(contrincante); // Este metodo consigue el rival con mayor puntos posibles
+		}
+	}
+	printf("El maximo puntaje obtenido por el jugador es de: %d puntos\n",jugador->puntaje);
+};
 
 //MENU
 
@@ -318,7 +332,7 @@ void Menu(){
 		cout << "INGRESE UNA DE LAS OPCIONES:\n";
 		cout << "1. Ingresar ganador partida\n";
 		cout << "2. Choque de contendientes\n";
-		cout << "3. Puntaje más alto posible si queda campeón\n";
+		cout << "3. Puntaje mas alto posible si queda campeon\n";
 		cout << "4. Mostrar llave\n";
 		cout << "5. Mostrar contendientes por puntaje\n";
 		cout << "6. Terminar el programa\n";
@@ -349,8 +363,10 @@ void Menu(){
 				choqueContendientes(jug1, jug2);
 				break;
 			case 3:
-				
-				
+				int id;
+				cout << "Id del jugador: ";
+				cin >> id;
+				puntajeMasAlto(id);
 				break;
 			case 4: 
 				mostrarArbol(raiz, 0);
