@@ -88,30 +88,13 @@ void mostrarArbol(Nodo *arbol,int contador){
                 printf("(X)     \n",arbol->nombre.c_str());
             }else{
                 printf("P-----\n",arbol->num);
+                
             }
         }
         mostrarArbol(arbol->izq,contador+1);
     }
 }
 
-void buscarJugador(Nodo *arbol, int id){
-	if(arbol == NULL){
-		
-	}else{
-		if(arbol->id == id && arbol->victoria == 0){
-			jugadorBuscado = arbol;
-		}
-		buscarJugador(arbol->izq, id);
-		buscarJugador(arbol->der, id);
-	}
-}
-
-Nodo *buscarContrincante(Nodo * arbol){
-	if(arbol->padre->izq->num == arbol->num){
-		return arbol->padre->der;
-	}
-	return arbol->padre->izq;
-}
 
 void crearArbolPerfecto(Nodo *&padre, int nivelActual, int nivel){
 	
@@ -204,6 +187,25 @@ void crearArbolTorneo(){
 	
 }
 
+void buscarJugador(Nodo *arbol, int id){ // Secundaria
+	if(arbol == NULL){
+		
+	}else{
+		if(arbol->id == id && arbol->victoria == 0){
+			jugadorBuscado = arbol;
+		}
+		buscarJugador(arbol->izq, id);
+		buscarJugador(arbol->der, id);
+	}
+}
+
+Nodo *buscarContrincante(Nodo * arbol){ // Secundaria
+	if(arbol->padre->izq->num == arbol->num){
+		return arbol->padre->der;
+	}
+	return arbol->padre->izq;
+}
+
 void ganadorPartida(int id){
 	buscarJugador(raiz, id);
 	Nodo *jugador = jugadorBuscado;
@@ -236,12 +238,80 @@ void ganadorPartida(int id){
 	
 }
 
+void completarRama(Nodo* rama){ // Secundaria
+	Nodo *hijoIzq = rama->izq;
+	Nodo *hijoDer = rama->der;
+	if(hijoIzq->id == NULL){
+		completarRama(hijoIzq);
+	}
+	if(hijoDer->id == NULL){
+		completarRama(hijoDer);
+	}
+	int puntajeIzquierda = hijoIzq->puntaje + (hijoDer->puntaje/hijoIzq->puntaje); 
+	int puntajeDerecha = hijoDer->puntaje + (hijoIzq->puntaje/hijoDer->puntaje); 
+	if(puntajeIzquierda < puntajeDerecha){
+		ganadorPartida(hijoDer->id);
+	}else{
+		ganadorPartida(hijoIzq->id);
+	}
+}
+
+void ganarHastaNivel(Nodo *jugador, int nivel){ // Secundaria
+	while(jugador->nivel > nivel){
+		Nodo *contrincante = buscarContrincante(jugador);
+		if(contrincante->id == NULL){
+			completarRama(contrincante);	
+		}
+		ganadorPartida(jugador->id);
+
+		jugador = jugador->padre;
+	}
+}
+
+void choqueContendientes(int id1, int id2){
+
+	buscarJugador(raiz, id1);
+	Nodo *contendiente1 = jugadorBuscado;
+	
+	buscarJugador(raiz, id2);
+	Nodo *contendiente2 = jugadorBuscado;
+	
+	while(contendiente2->padre != contendiente1->padre){
+		
+		if(contendiente1->nivel > contendiente2->nivel){ // El contendiente 1 necesita realizar partidas
+			ganarHastaNivel(contendiente1, contendiente2->nivel); 
+		}else if(contendiente1->nivel < contendiente2->nivel){ // El contendiente 1 necesita realizar partidas
+			ganarHastaNivel(contendiente2, contendiente1->nivel);
+		}else{ // Ambos necesitan realizar partidas
+			Nodo *contrincante = buscarContrincante(contendiente1);
+			if(contrincante->id == NULL){ //Si aun no hay un contrincante, se busca uno
+				completarRama(contrincante); 	
+			}
+			ganadorPartida(contendiente1->id);
+			contendiente1 = contendiente1->padre;
+			
+			contrincante = buscarContrincante(contendiente2);
+			if(contrincante->id == NULL){ //Si aun no hay un contrincante, se busca uno
+				completarRama(contrincante);
+			}
+			ganadorPartida(contendiente2->id);
+			contendiente2 = contendiente2->padre;
+		}
+		buscarJugador(raiz, id1);
+		contendiente1 = jugadorBuscado;
+	
+		buscarJugador(raiz, id2);
+		contendiente2 = jugadorBuscado;	
+	}
+	
+	cout << "Los contendientes estan listos para enfrentarse.\n\n" << endl;
+}
+
 
 //MENU
 
 void Menu(){
 
-	
 	int dato, opcion;
 	do{
 		opcion = 0;
@@ -265,7 +335,18 @@ void Menu(){
 				break;
 				break;
 			case 2:
-			
+				int jug1;
+				int jug2;
+				
+				cout << "Id del primer contendiente: ";
+				cin >> jug1;
+				cout << "\n";
+				
+				cout <<"Id del segundo contendiente: ";
+				cin >> jug2;
+				cout<<"\n";
+				
+				choqueContendientes(jug1, jug2);
 				break;
 			case 3:
 				
