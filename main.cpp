@@ -89,6 +89,8 @@ void insertar(nodoLista *&primero, nodoLista *&ultimo, int puntaje, string nombr
 	
 }
 
+// Funcion para mostrar la lista de nodos (la cual usaremos para imprimir los jugadores y su score, ordenados de mayor a menor.
+// primero: primer nodo para recorrerlo
 void displayList(nodoLista *&primero)
 {
 	nodoLista *actual;
@@ -130,6 +132,10 @@ Nodo *crearNodo(int n){
 	return nuevo_nodo;
 }
 
+
+// Funcion para mostrar la llave del torneo en su estado actual
+// arbol: arbol del torneo, ya sea el real o una simulacion
+// contador: identacion para las impresiones
 void mostrarArbol(Nodo *arbol,int contador){ // Opcion 4 del sistema
     if(arbol==NULL){
         return;
@@ -158,14 +164,19 @@ void mostrarArbol(Nodo *arbol,int contador){ // Opcion 4 del sistema
 
 
 void crearArbolPerfecto(Nodo *&padre, int nivelActual, int nivel){
+	padre->nivel = nivelActual;
 	
 	Nodo *hijo1 = crearNodo(idActual);
 	padre->izq = hijo1;
 	hijo1->padre = padre;
+	hijo1->nivel = nivelActual+1;
+	
+
 	
 	Nodo *hijo2 = crearNodo(idActual);
 	padre->der = hijo2;
 	hijo2->padre = padre;
+	hijo2->nivel = nivelActual+1;
 	
 	if(nivelActual < nivel){
 		crearArbolPerfecto(hijo1, nivelActual + 1, nivel);
@@ -187,7 +198,6 @@ void crearArbolPerfecto(Nodo *&padre, int nivelActual, int nivel){
 		hijo1->nombre = nombre1;
 		hijo1->id = numParticipante;
 		hijo1->puntaje = puntuacion1;
-		hijo1->nivel = nivel;
 
 		numParticipante = numParticipante + 1;
 		
@@ -207,11 +217,12 @@ void crearArbolPerfecto(Nodo *&padre, int nivelActual, int nivel){
 		hijo2->id = numParticipante;
 		hijo2->nombre = nombre2;
 		hijo2->puntaje = puntuacion2;
-		hijo2->nivel = nivel;
+
 
 		numParticipante = numParticipante + 1;
 		
 	}
+	
 }
 
 void crearArbolTorneo(){
@@ -296,6 +307,9 @@ Nodo *buscarContrincante(Nodo * arbol){ // Secundaria
 	return arbol->padre->izq;
 }
 
+// En esta funcion se reportara el resultado de un encuentro
+// raiz: el arbol del torneo
+// id: el id del jugador que gano el encuentro
 void ganadorPartida(Nodo *& raiz, int id){ // Opcion 1 del sistema
 	buscarJugador(raiz, id);
 	Nodo *jugador = jugadorBuscado;
@@ -317,9 +331,7 @@ void ganadorPartida(Nodo *& raiz, int id){ // Opcion 1 del sistema
 		jugador->victoria = 2;
 		printf("\n-----------------------------\n");
 		//Mostramos en pantalla
-		printf("%s ha ganado su encuentro correctamente\nEl estado actual del torneo es el siguiente:\n\n", jugador->nombre.c_str());
-		mostrarArbol(raiz, 0);
-		printf("\n-----------------------------\n");
+		printf("%s ha ganado su encuentro correctamente\n\n", jugador->nombre.c_str());
 		if(jugador->padre->padre == NULL){
 			printf("El ganador del torneo es... %s con %d puntos!!!\n", jugador->padre->nombre.c_str(), jugador->padre->puntaje);
 		}
@@ -347,6 +359,7 @@ void completarRama(Nodo* rama){ // Secundaria
 }
 
 void ganarHastaNivel(Nodo *jugador, int nivel){ // Secundaria
+	
 	while(jugador->nivel > nivel){
 		Nodo *contrincante = buscarContrincante(jugador);
 		if(contrincante->id == NULL){
@@ -358,6 +371,11 @@ void ganarHastaNivel(Nodo *jugador, int nivel){ // Secundaria
 	}
 }
 
+// En esta funcion se encontrara la manera de que dos jugadores se enfrenten.
+// raiz: arbol del torneo
+// id1: id del primer jugador
+// id2: id del segundo jugador
+
 void choqueContendientes(Nodo *& raiz, int id1, int id2){ // Opcion 2 del sistema
 	
 	buscarJugador(raiz, id1);
@@ -367,15 +385,12 @@ void choqueContendientes(Nodo *& raiz, int id1, int id2){ // Opcion 2 del sistem
 	Nodo *contendiente2 = jugadorBuscado;
 	
 	while(contendiente2->padre != contendiente1->padre){
-		
 		if(contendiente1->nivel > contendiente2->nivel){ // El contendiente 1 necesita realizar partidas
-		
 			ganarHastaNivel(contendiente1, contendiente2->nivel); 
 			
 		}else if(contendiente1->nivel < contendiente2->nivel){ // El contendiente 1 necesita realizar partidas
 			ganarHastaNivel(contendiente2, contendiente1->nivel);
 		}else{ // Ambos necesitan realizar partidas
-			
 			Nodo *contrincante = buscarContrincante(contendiente1);
 			if(contrincante->id == NULL){ //Si aun no hay un contrincante, se busca uno
 				completarRama(contrincante); //Arreglar	
@@ -398,15 +413,15 @@ void choqueContendientes(Nodo *& raiz, int id1, int id2){ // Opcion 2 del sistem
 	
 		buscarJugador(raiz, id2);
 		contendiente2 = jugadorBuscado;	
-		
-		//cout << "aqui" << endl;
-		mostrarArbol(raiz, 0);
-		//cout << "aqui" << endl;
 	}
 	
-	cout << "De esta forma los contendientes llegarian a enfrentarse.\n\n" << endl;
+	cout << "\nDe esta forma los contendientes llegarian a enfrentarse.\n" << endl;
 }
 
+
+// Funcion para encontrar el maximo puntaje que un jugador podria tener ganando el torneo.
+// raiz: arbol del torneo
+// id: id del jugador
 void puntajeMasAlto(Nodo *&raiz, int id){ // Opcion 3 del sistema
 	buscarJugador(raiz, id);
 	Nodo *jugador = jugadorBuscado;
@@ -448,6 +463,9 @@ void Menu(){
 				cout<<"Id del jugador: ";
 				cin>>dato;
 				ganadorPartida(raiz, dato);
+				
+				cout << "\nEl torneo quedaria de la siguiente manera: \n\n";
+				mostrarArbol(raiz, 0);
 				break;
 				break;
 			case 2:
@@ -465,6 +483,9 @@ void Menu(){
 				copiaRaiz = NULL;
 				simularArbol(raiz, copiaRaiz, false);
 				choqueContendientes(copiaRaiz, jug1, jug2);
+				
+				cout << "De forma que el torneo quedaria de la siguiente manera: \n\n";
+				mostrarArbol(copiaRaiz, 0);
 				break;
 			case 3:
 				int id;
@@ -473,7 +494,10 @@ void Menu(){
 				
 				copiaRaiz = NULL;
 				simularArbol(raiz, copiaRaiz, false);
-				puntajeMasAlto(copiaRaiz, id); \
+				puntajeMasAlto(copiaRaiz, id); 
+				cout << "\nDe forma que el torneo quedaria de la siguiente manera: \n\n";
+				mostrarArbol(copiaRaiz, 0);
+				cout << "\n";
 				break;
 			case 4: 
 				mostrarArbol(raiz, 0);
